@@ -1,0 +1,28 @@
+# Database credentials
+config/database.php
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local development
+.DS_Store
+Thumbs.db
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+# Local database backups
+*.sql
+# Database credentials
+config/database.php
+
+# Local database backups
+*.sql
+
+.env
+.env.*
+# Private password reset utility
+admin/reset_password.php
