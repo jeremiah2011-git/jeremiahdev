@@ -1,5 +1,7 @@
 # Jeremiah.dev — Personal Full-Stack Developer Portfolio
+## Website Preview
 
+![Jeremiah.dev Homepage](screenshots/homepage.png)
 **Version:** 4.2  
 **Developer:** Jeremiah Zeleke
 
