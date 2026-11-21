@@ -42,7 +42,7 @@ unset($_SESSION["flash"], $_SESSION["flash_type"]);
     <div class="hero-visual">
       <div class="portrait-frame">
         <div class="portrait-glow"></div>
-        <img src="assets/image/profile.png" alt="Portrait of Jeremiah" class="profile-photo">
+     <img src="img/profile.png" alt="Portrait of Jeremiah" class="profile-photo">
         <div class="portrait-caption">
           <span class="caption-mark">J.</span>
           <span><strong>Jeremiah</strong><small>Developer in progress</small></span>
