@@ -57,11 +57,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if ($_FILES["project_image"]["error"] !== UPLOAD_ERR_OK) $errors[] = "Image upload failed.";
                 elseif ($_FILES["project_image"]["size"] > 3 * 1024 * 1024) $errors[] = "Image must be 3 MB or smaller.";
                 else {
-                    $info = @getimagesize($_FILES["project_image"]["tmp_name"]);
-                    $mime = $info["mime"] ?? "";
-                    $extensions = ["image/jpeg" => "jpg", "image/png" => "png", "image/webp" => "webp"];
-                    if (!$info || !isset($extensions[$mime])) $errors[] = "Use a JPG, PNG, or WEBP image.";
-                    else {
+                   $tmpFile = $_FILES["project_image"]["tmp_name"];
+$info = @getimagesize($tmpFile);
+
+$finfo = new finfo(FILEINFO_MIME_TYPE);
+$mime = $finfo->file($tmpFile);
+
+$extensions = [
+    "image/jpeg" => "jpg",
+    "image/png" => "png",
+    "image/webp" => "webp"
+];
+
+if (
+    !$info ||
+    !isset($extensions[$mime]) ||
+    ($info["mime"] ?? "") !== $mime
+) {
+    $errors[] = "Use a valid JPG, PNG, or WEBP image.";
+} else {
                         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
                         $filename = bin2hex(random_bytes(16)) . "." . $extensions[$mime];
                         if (move_uploaded_file($_FILES["project_image"]["tmp_name"], $uploadDir . $filename)) {
