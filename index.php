@@ -10,7 +10,7 @@ $projects = [];
 try {
     $projects = $pdo->query("SELECT id, title, description, tech_stack, image_path, project_url FROM projects WHERE is_published = 1 ORDER BY sort_order ASC, created_at DESC")->fetchAll();
 } catch (PDOException $e) {
-    // The V3 database upgrade must be imported before project management is available.
+    error_log("Homepage project query failed: " . $e->getMessage());
 }
 require __DIR__ . "/includes/header.php";
 $flash = $_SESSION["flash"] ?? "";
