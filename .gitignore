@@ -20,3 +20,6 @@ Thumbs.db
 
 # Private password reset utility
 admin/reset_password.php
+# User-uploaded project images
+assets/uploads/*
+!assets/uploads/.htaccess

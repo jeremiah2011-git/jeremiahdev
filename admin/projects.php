@@ -52,30 +52,36 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($description === "" || mb_strlen($description) > 5000) $errors[] = "Description is required and must be under 5,000 characters.";
             if (!validExternalUrl($url)) $errors[] = "Project URL must be a valid http or https URL.";
             $imagePath = null;
-            $existingImage = trim($_POST["existing_image"] ?? "");
+            $oldImage = null;
+
+            if ($id > 0) {
+                $oldImageStmt = $pdo->prepare("SELECT image_path FROM projects WHERE id = ?");
+                $oldImageStmt->execute([$id]);
+                $oldImage = $oldImageStmt->fetchColumn();
+            }
             if (!empty($_FILES["project_image"]["name"])) {
                 if ($_FILES["project_image"]["error"] !== UPLOAD_ERR_OK) $errors[] = "Image upload failed.";
                 elseif ($_FILES["project_image"]["size"] > 3 * 1024 * 1024) $errors[] = "Image must be 3 MB or smaller.";
                 else {
-                   $tmpFile = $_FILES["project_image"]["tmp_name"];
-$info = @getimagesize($tmpFile);
+                    $tmpFile = $_FILES["project_image"]["tmp_name"];
+                    $info = @getimagesize($tmpFile);
 
-$finfo = new finfo(FILEINFO_MIME_TYPE);
-$mime = $finfo->file($tmpFile);
+                    $finfo = new finfo(FILEINFO_MIME_TYPE);
+                    $mime = $finfo->file($tmpFile);
 
-$extensions = [
-    "image/jpeg" => "jpg",
-    "image/png" => "png",
-    "image/webp" => "webp"
-];
+                    $extensions = [
+                        "image/jpeg" => "jpg",
+                        "image/png" => "png",
+                        "image/webp" => "webp"
+                    ];
 
-if (
-    !$info ||
-    !isset($extensions[$mime]) ||
-    ($info["mime"] ?? "") !== $mime
-) {
-    $errors[] = "Use a valid JPG, PNG, or WEBP image.";
-} else {
+                    if (
+                        !$info ||
+                        !isset($extensions[$mime]) ||
+                        ($info["mime"] ?? "") !== $mime
+                    ) {
+                        $errors[] = "Use a valid JPG, PNG, or WEBP image.";
+                    } else {
                         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
                         $filename = bin2hex(random_bytes(16)) . "." . $extensions[$mime];
                         if (move_uploaded_file($_FILES["project_image"]["tmp_name"], $uploadDir . $filename)) {
@@ -96,12 +102,21 @@ if (
                     $params[] = $id;
                     $stmt = $pdo->prepare($sql);
                     $stmt->execute($params);
-                    if ($imagePath && $existingImage) {
-                        $oldFile = realpath(__DIR__ . "/../" . $existingImage);
-                        $uploadReal = realpath($uploadDir);
-                        if ($oldFile && $uploadReal && strpos($oldFile, $uploadReal . DIRECTORY_SEPARATOR) === 0 && is_file($oldFile)) @unlink($oldFile);
-                    }
                     $notice = "Project updated.";
+
+                    if ($imagePath && !empty($oldImage)) {
+                        $oldFile = realpath(__DIR__ . "/../" . $oldImage);
+                        $uploadReal = realpath($uploadDir);
+
+                        if (
+                            $oldFile &&
+                            $uploadReal &&
+                            strpos($oldFile, $uploadReal . DIRECTORY_SEPARATOR) === 0 &&
+                            is_file($oldFile)
+                        ) {
+                            @unlink($oldFile);
+                        }
+                    }
                 } else {
                     $stmt = $pdo->prepare("INSERT INTO projects (title, description, tech_stack, image_path, project_url, sort_order, is_published) VALUES (?, ?, ?, ?, ?, ?, ?)");
                     $stmt->execute([$title, $description, $tech, $imagePath, $url ?: null, $sort, $published]);
@@ -134,7 +149,6 @@ require __DIR__ . "/../includes/header.php";
       <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, "UTF-8") ?>">
       <input type="hidden" name="action" value="save">
       <input type="hidden" name="id" value="<?= (int)($editProject["id"] ?? 0) ?>">
-      <input type="hidden" name="existing_image" value="<?= htmlspecialchars($editProject["image_path"] ?? "", ENT_QUOTES, "UTF-8") ?>">
       <label for="title">Project title *</label><input id="title" name="title" maxlength="150" required value="<?= htmlspecialchars($editProject["title"] ?? "", ENT_QUOTES, "UTF-8") ?>">
       <label for="description">Description *</label><textarea id="description" name="description" rows="4" maxlength="5000" required><?= htmlspecialchars($editProject["description"] ?? "", ENT_QUOTES, "UTF-8") ?></textarea>
       <label for="tech_stack">Technologies (comma separated)</label><input id="tech_stack" name="tech_stack" maxlength="500" placeholder="PHP, MySQL, JavaScript" value="<?= htmlspecialchars($editProject["tech_stack"] ?? "", ENT_QUOTES, "UTF-8") ?>">
