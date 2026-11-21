@@ -1,122 +1,112 @@
-# Jeremiah.dev — Full-stack portfolio starter
+# Jeremiah.dev — Personal Full-Stack Developer Portfolio
 
-## Requirements
+**Version:** 4.2  
+**Developer:** Jeremiah Zeleke
+
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/jeremiah2011-git/jeremiahdev)
+
+## About
+
+Jeremiah.dev is a personal portfolio website designed to showcase my professional background, technical skills, software projects, and contact information.
+
+Built with PHP, MySQL, HTML, CSS, and JavaScript, this project combines a responsive frontend with dynamic backend functionality.
+
+## Features
+
+- Responsive personal portfolio homepage
+- Profile photograph
+- Skills and project showcase
+- PHP contact form
+- MySQL database integration
+- Administrator authentication
+- Admin dashboard
+- Project management
+- Project image uploads
+
+## Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| HTML5 | Structure |
+| CSS3 | Design and responsiveness |
+| JavaScript | Interactivity |
+| PHP | Backend |
+| MySQL | Database |
+| Apache | Local server |
+| Git and GitHub | Version control |
+
+## Project Structure
+
+```text
+jeremiahdev/
+├── admin/
+├── config/
+├── includes/
+├── img/
+│   └── profile.png
+├── index.php
+├── contact.php
+├── .gitignore
+├── LICENSE
+└── README.md
+```
+
+## Installation
+
+### Requirements
+
 - Windows
-- XAMPP (Apache + MySQL)
-- A modern browser
-- A code editor such as VS Code
+- XAMPP
+- PHP
+- MySQL
+- Visual Studio Code
+- Git
 
-## 1. Put the project in XAMPP
-1. Extract the `jeremiah-dev-fullstack` folder.
-2. Copy it into `C:\xampp\htdocs\`.
-3. Start **Apache** and **MySQL** from the XAMPP Control Panel.
+### Setup
 
-## 2. Create the database
-1. Visit `http://localhost/phpmyadmin`.
-2. Select **Import**.
-3. Choose this project's `database.sql`.
-4. Click **Import** or **Go**.
+1. Clone the repository:
 
-The SQL creates a database named `jeremiah_portfolio`, plus `messages` and `admins` tables.
+   ```bash
+   git clone https://github.com/jeremiah2011-git/jeremiahdev.git
+   ```
 
-## 3. Check database credentials
-Open `config/database.php`. The default XAMPP MySQL username is often `root` with a blank password on a local development installation. If you configured a password, enter it there.
+2. Place the project inside your XAMPP `htdocs` directory.
 
-## 4. Create your admin account
-1. Visit `http://localhost/jeremiah-dev-fullstack/admin/create_admin.php`.
-2. Create an email and a strong password (at least 12 characters).
-3. **Immediately delete `admin/create_admin.php` after creating the account.**
-4. Visit `http://localhost/jeremiah-dev-fullstack/admin/login.php` and sign in.
+3. Start Apache and MySQL.
 
-## 5. Open the website
-Visit `http://localhost/jeremiah-dev-fullstack/`.
+4. Configure your local database connection in `config/database.php`.
 
-## Project structure
-- `index.php` — portfolio homepage
-- `contact.php` — validates and saves contact messages
-- `config/database.php` — PDO database connection
-- `includes/` — shared header and footer
-- `assets/css/style.css` — responsive styling
-- `assets/js/main.js` — mobile navigation behavior
-- `admin/` — login, dashboard, logout, one-time admin setup
-- `database.sql` — database and table definitions
+5. Create the required database and tables using your local database setup files.
 
-## Important security notes
-This is a local learning starter, not a production-ready deployment. Before publishing it:
-- Use HTTPS and secure cookie/session settings.
-- Move database credentials into environment configuration outside the public web root.
-- Add CSRF protection and login rate limiting.
-- Keep PHP, Apache, and MySQL updated.
-- Remove setup scripts and disable public error display.
-- Add privacy, retention, and spam-protection measures to the contact form.
-- Use a proper production hosting configuration and backups.
+6. Open your browser and visit:
 
-## Learning tasks
-1. Change the introduction and skills to your real experience.
-2. Replace the sample projects with your own project descriptions.
-3. Add project screenshots and links to GitHub repositories.
-4. Test the contact form and confirm messages appear in the admin dashboard.
-5. Explain what `prepare()`, `execute()`, `password_hash()`, and `password_verify()` do.
+   ```text
+   http://localhost/jeremiahdev/
+   ```
 
+   Adjust the URL to match your actual project folder.
 
-## Modernized portfolio update
+## Security
 
-- Replaced the public portfolio styling with a responsive dark navy / violet / cyan design.
-- Added the supplied profile photograph at `assets/image/profile.png`.
-- Added responsive project preview illustrations built with CSS (no extra image downloads required).
-- Improved the mobile navigation and contact-form feedback display.
-- Kept the existing PHP contact handler, database connection, and admin pages.
+- Never publish database credentials.
+- Keep private configuration files out of Git.
+- Use strong administrator passwords.
+- Validate user input.
+- Restrict uploaded file types and sizes.
+- Use HTTPS when deploying publicly.
 
-### Run locally with XAMPP
+## Version
 
-1. Extract this folder into `C:\xampp\htdocs\`.
-2. Start Apache and MySQL in the XAMPP Control Panel.
-3. Import `database.sql` into phpMyAdmin if the database has not already been created.
-4. Check the database credentials in `config/database.php`.
-5. Open `http://localhost/jeremiah-dev-fullstack/` in your browser.
+**Jeremiah.dev V4.2**
 
-The profile image is already included at `assets/image/profile.png`.
+Development is ongoing, with future improvements planned for functionality, security, and user experience.
 
+## Developer
 
-## Version 2.0 features
+**Jeremiah Zeleke**
 
-- Dark/light theme switch with preference saved in the browser.
-- Respects the device theme preference on first visit.
-- Scroll-reveal motion for sections and project/skill cards.
-- Social profile link placeholders in the hero and footer.
-- A Download CV navigation link appears automatically after you add your own `assets/files/cv.pdf`.
+- GitHub: [jeremiah2011-git](https://github.com/jeremiah2011-git)
 
-### Finish your personal links and CV
+---
 
-1. Replace the `#contact` destinations for LinkedIn and GitHub in `index.php` and `includes/footer.php` with your real profile URLs.
-2. Create `assets/files/` and put your own CV there with the filename `cv.pdf`. The navigation link will then appear automatically.
-3. Refresh the page with `Ctrl + F5`.
-
-
-## Version 3.0 — Admin dashboard and dynamic projects
-
-V3 adds:
-- Admin dashboard summary cards (total messages, unread messages, projects).
-- Message inbox with read/unread status and delete actions.
-- Project management: add, edit, delete, publish/draft, ordering, technology tags, external project URL, and image upload.
-- Public homepage project cards are loaded from the database.
-- Project images are restricted to JPG, PNG, and WEBP and limited to 3 MB.
-- POST actions use a session CSRF token.
-
-### Important database upgrade
-
-Before using V3, back up your existing database in phpMyAdmin (Export), then import `database_v3_upgrade.sql` into the existing `jeremiah_portfolio` database. Run this migration only once. It creates the `projects` table and adds the `is_read` column to `messages`; it does not delete existing admins or messages.
-
-### Use the V3 admin area
-
-1. Sign in at `http://localhost/jeremiah-dev-fullstack/admin/login.php`.
-2. Open Manage projects from the dashboard, or visit `/admin/projects.php`.
-3. Add a project, choose whether to publish it, and save.
-4. The published project will appear on the homepage.
-5. Review messages, mark them read/unread, or delete them from the dashboard.
-
-### Upload folder
-
-Uploaded project images are stored in `assets/uploads/`. PHP execution is denied in that folder by its `.htaccess` file. Keep Apache's `.htaccess` support enabled.
-
-Back up the database and project folder before upgrading. Do not expose `admin/create_admin.php` on a public server; delete it after creating the first admin account.
+*Built with dedication, continuous learning, and a passion for software development.*
