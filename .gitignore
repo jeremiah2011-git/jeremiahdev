@@ -14,15 +14,9 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
-# Local database backups
-*.sql
-# Database credentials
-config/database.php
 
-# Local database backups
+# Database backups and SQL files
 *.sql
 
-.env
-.env.*
 # Private password reset utility
 admin/reset_password.php

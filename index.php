@@ -1,5 +1,8 @@
 <?php
 session_start();
+if (empty($_SESSION["csrf_token"])) {
+    $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+}
 require __DIR__ . "/config/database.php";
 $pageTitle = "Jeremiah.dev | Developer Portfolio";
 $projects = [];
@@ -128,6 +131,21 @@ unset($_SESSION["flash"], $_SESSION["flash_type"]);
   </div>
 
   <form class="contact-form" action="contact.php" method="POST">
+<input
+    type="hidden"
+    name="csrf_token"
+    value="<?= htmlspecialchars($_SESSION["csrf_token"], ENT_QUOTES, "UTF-8") ?>"
+<div class="form-website-field" aria-hidden="true">
+    <label for="website">Leave this field empty</label>
+    <input
+        type="text"
+        id="website"
+        name="website"
+        tabindex="-1"
+        autocomplete="off"
+    >
+</div>
+>
     <input type="text" name="name" placeholder="Your name" required>
     <input type="email" name="email" placeholder="Your email" required>
     <input type="text" name="subject" placeholder="Subject" required>
