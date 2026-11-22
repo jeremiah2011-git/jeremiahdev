@@ -16,9 +16,14 @@ $ipHash = hash("sha256", $ipAddress);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
+    $sessionToken = $_SESSION["csrf_token"] ?? null;
+    $submittedToken = $_POST["csrf_token"] ?? null;
+
     if (
-        !isset($_POST["csrf_token"]) ||
-        !hash_equals($_SESSION["csrf_token"], $_POST["csrf_token"])
+        !is_string($sessionToken) ||
+        $sessionToken === "" ||
+        !is_string($submittedToken) ||
+        !hash_equals($sessionToken, $submittedToken)
     ) {
         $error = "Invalid request. Please refresh the page.";
 
@@ -47,8 +52,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         } else {
 
-            $email = trim($_POST["email"] ?? "");
-            $password = $_POST["password"] ?? "";
+            $email = is_string($_POST["email"] ?? null) ? trim($_POST["email"]) : "";
+            $password = is_string($_POST["password"] ?? null) ? $_POST["password"] : "";
 
             if (
                 strlen($email) > 190 ||

@@ -15,10 +15,14 @@ if (!empty($_POST["website"])) {
     exit;
 }
 // Verify CSRF token
+$sessionToken = $_SESSION["csrf_token"] ?? null;
+$submittedToken = $_POST["csrf_token"] ?? null;
+
 if (
-    empty($_SESSION["csrf_token"]) ||
-    !isset($_POST["csrf_token"]) ||
-    !hash_equals($_SESSION["csrf_token"], $_POST["csrf_token"])
+    !is_string($sessionToken) ||
+    $sessionToken === "" ||
+    !is_string($submittedToken) ||
+    !hash_equals($sessionToken, $submittedToken)
 ) {
     $_SESSION["flash"] = "Invalid request. Please refresh the page and try again.";
     $_SESSION["flash_type"] = "error";
@@ -28,10 +32,10 @@ if (
 
 
 // Collect form data
-$name = trim($_POST["name"] ?? "");
-$email = trim($_POST["email"] ?? "");
-$subject = trim($_POST["subject"] ?? "");
-$message = trim($_POST["message"] ?? "");
+$name = is_string($_POST["name"] ?? null) ? trim($_POST["name"]) : "";
+$email = is_string($_POST["email"] ?? null) ? trim($_POST["email"]) : "";
+$subject = is_string($_POST["subject"] ?? null) ? trim($_POST["subject"]) : "";
+$message = is_string($_POST["message"] ?? null) ? trim($_POST["message"]) : "";
 
 // Validate input
 if (

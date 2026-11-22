@@ -135,7 +135,7 @@ unset($_SESSION["flash"], $_SESSION["flash_type"]);
 <input
     type="hidden"
     name="csrf_token"
-    value="<?= htmlspecialchars($_SESSION["csrf_token"], ENT_QUOTES, "UTF-8") ?>"
+    value="<?= htmlspecialchars($_SESSION["csrf_token"], ENT_QUOTES, "UTF-8") ?>">
 <div class="form-website-field" aria-hidden="true">
     <label for="website">Leave this field empty</label>
     <input
@@ -146,7 +146,6 @@ unset($_SESSION["flash"], $_SESSION["flash_type"]);
         autocomplete="off"
     >
 </div>
->
     <input type="text" name="name" placeholder="Your name" required>
     <input type="email" name="email" placeholder="Your email" required>
     <input type="text" name="subject" placeholder="Subject" required>

@@ -10,9 +10,14 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 
 // Validate CSRF token
+$sessionToken = $_SESSION["csrf_token"] ?? null;
+$submittedToken = $_POST["csrf_token"] ?? null;
+
 if (
-    !isset($_POST["csrf_token"], $_SESSION["csrf_token"]) ||
-    !hash_equals($_SESSION["csrf_token"], $_POST["csrf_token"])
+    !is_string($sessionToken) ||
+    $sessionToken === "" ||
+    !is_string($submittedToken) ||
+    !hash_equals($sessionToken, $submittedToken)
 ) {
     http_response_code(403);
     exit("Invalid request. Please refresh the page.");

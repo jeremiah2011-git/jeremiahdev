@@ -2,7 +2,9 @@
 require __DIR__ . "/../includes/session.php";
 if (!isset($_SESSION["admin_id"])) { header("Location: login.php"); exit; }
 require __DIR__ . "/../config/database.php";
-if (empty($_SESSION["csrf_token"])) $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+if (!is_string($_SESSION["csrf_token"] ?? null) || $_SESSION["csrf_token"] === "") {
+    $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+}
 $csrf = $_SESSION["csrf_token"];
 $notice = $_SESSION["dashboard_notice"] ?? "";
 $noticeType = $_SESSION["dashboard_notice_type"] ?? "success";
@@ -13,28 +15,51 @@ unset(
 );
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    if (!hash_equals($csrf, $_POST["csrf_token"] ?? "")) {
+    $submittedToken = $_POST["csrf_token"] ?? null;
+
+    if (
+        !is_string($submittedToken) ||
+        !hash_equals($csrf, $submittedToken)
+    ) {
         $notice = "Your session token expired. Refresh the page and try again.";
         $noticeType = "error";
     } else {
-        $action = $_POST["action"] ?? "";
-        $id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
-        if ($id && $action === "toggle_read") {
-            $stmt = $pdo->prepare("UPDATE messages SET is_read = CASE WHEN is_read = 1 THEN 0 ELSE 1 END WHERE id = ?");
-                        $stmt->execute([$id]);
+        $action = is_string($_POST["action"] ?? null)
+            ? $_POST["action"]
+            : "";
 
-            $_SESSION["dashboard_notice"] = "Message status updated.";
-            $_SESSION["dashboard_notice_type"] = "success";
+        $id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
+
+        if ($id && $id > 0 && $action === "toggle_read") {
+            $stmt = $pdo->prepare(
+                "UPDATE messages
+                 SET is_read = CASE WHEN is_read = 1 THEN 0 ELSE 1 END
+                 WHERE id = ?"
+            );
+            $stmt->execute([$id]);
+
+            if ($stmt->rowCount() > 0) {
+                $_SESSION["dashboard_notice"] = "Message status updated.";
+                $_SESSION["dashboard_notice_type"] = "success";
+            } else {
+                $_SESSION["dashboard_notice"] = "Message not found or status unchanged.";
+                $_SESSION["dashboard_notice_type"] = "error";
+            }
 
             header("Location: dashboard.php");
             exit;
-            $notice = "Message status updated.";
-        } elseif ($id && $action === "delete") {
-            $stmt = $pdo->prepare("DELETE FROM messages WHERE id = ?");
-                      $stmt->execute([$id]);
 
-            $_SESSION["dashboard_notice"] = "Message deleted.";
-            $_SESSION["dashboard_notice_type"] = "success";
+        } elseif ($id && $id > 0 && $action === "delete") {
+            $stmt = $pdo->prepare("DELETE FROM messages WHERE id = ?");
+            $stmt->execute([$id]);
+
+            if ($stmt->rowCount() > 0) {
+                $_SESSION["dashboard_notice"] = "Message deleted.";
+                $_SESSION["dashboard_notice_type"] = "success";
+            } else {
+                $_SESSION["dashboard_notice"] = "Message not found or could not be deleted.";
+                $_SESSION["dashboard_notice_type"] = "error";
+            }
 
             header("Location: dashboard.php");
             exit;

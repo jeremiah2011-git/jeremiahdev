@@ -3,7 +3,9 @@ require __DIR__ . "/../includes/session.php";
 if (!isset($_SESSION["admin_id"])) { header("Location: login.php"); exit; }
 require __DIR__ . "/../config/database.php";
 
-if (empty($_SESSION["csrf_token"])) $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+if (!is_string($_SESSION["csrf_token"] ?? null) || $_SESSION["csrf_token"] === "") {
+    $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+}
 $csrf = $_SESSION["csrf_token"];
 $notice = "";
 $noticeType = "success";
@@ -19,35 +21,81 @@ function validExternalUrl(string $url): bool {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    if (!hash_equals($csrf, $_POST["csrf_token"] ?? "")) {
+    $submittedToken = $_POST["csrf_token"] ?? null;
+
+    if (
+        !is_string($submittedToken) ||
+        !hash_equals($csrf, $submittedToken)
+    ) {
         $notice = "Your session token expired. Refresh the page and try again.";
         $noticeType = "error";
     } else {
-        $action = $_POST["action"] ?? "";
-        if ($action === "delete") {
+        $action = is_string($_POST["action"] ?? null)
+            ? $_POST["action"]
+            : "";
+           if ($action === "delete") {
             $id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
-            if ($id) {
+
+            if ($id && $id > 0) {
                 $find = $pdo->prepare("SELECT image_path FROM projects WHERE id = ?");
                 $find->execute([$id]);
                 $old = $find->fetch();
-                $del = $pdo->prepare("DELETE FROM projects WHERE id = ?");
-                $del->execute([$id]);
-                if ($old && !empty($old["image_path"])) {
-                    $oldFile = realpath(__DIR__ . "/../" . $old["image_path"]);
-                    $uploadReal = realpath($uploadDir);
-                    if ($oldFile && $uploadReal && strpos($oldFile, $uploadReal . DIRECTORY_SEPARATOR) === 0 && is_file($oldFile)) @unlink($oldFile);
+
+                if ($old) {
+                    $del = $pdo->prepare("DELETE FROM projects WHERE id = ?");
+                    $del->execute([$id]);
+
+                    if ($del->rowCount() > 0) {
+                        if (!empty($old["image_path"])) {
+                            $oldFile = realpath(__DIR__ . "/../" . $old["image_path"]);
+                            $uploadReal = realpath($uploadDir);
+
+                            if (
+                                $oldFile &&
+                                $uploadReal &&
+                                strpos($oldFile, $uploadReal . DIRECTORY_SEPARATOR) === 0 &&
+                                is_file($oldFile)
+                            ) {
+                                @unlink($oldFile);
+                            }
+                        }
+
+                        $notice = "Project deleted.";
+                    } else {
+                        $notice = "Project could not be deleted.";
+                        $noticeType = "error";
+                    }
+                } else {
+                    $notice = "Project not found.";
+                    $noticeType = "error";
                 }
-                $notice = "Project deleted.";
+            } else {
+                $notice = "Invalid project ID.";
+                $noticeType = "error";
             }
         } elseif ($action === "save") {
             $idInput = $_POST["id"] ?? "0";
-            $id = is_scalar($idInput) ? filter_var((string)$idInput, FILTER_VALIDATE_INT) : false;
-            $title = cleanProjectInput($_POST["title"] ?? "", 150);
-            $description = trim($_POST["description"] ?? "");
-            $tech = cleanProjectInput($_POST["tech_stack"] ?? "", 500);
-            $url = trim($_POST["project_url"] ?? "");
-            $sort = (int)($_POST["sort_order"] ?? 0);
-            $published = isset($_POST["is_published"]) ? 1 : 0;
+            $id = is_string($idInput)
+                ? filter_var($idInput, FILTER_VALIDATE_INT)
+                : false;
+
+            $titleInput = $_POST["title"] ?? "";
+            $title = cleanProjectInput(is_string($titleInput) ? $titleInput : "", 150);
+
+            $descriptionInput = $_POST["description"] ?? "";
+            $description = is_string($descriptionInput) ? trim($descriptionInput) : "";
+
+            $techInput = $_POST["tech_stack"] ?? "";
+            $tech = cleanProjectInput(is_string($techInput) ? $techInput : "", 500);
+
+            $urlInput = $_POST["project_url"] ?? "";
+            $url = is_string($urlInput) ? trim($urlInput) : "";
+
+            $sortInput = $_POST["sort_order"] ?? "0";
+            $sortValue = is_string($sortInput) ? filter_var($sortInput, FILTER_VALIDATE_INT) : false;
+            $sort = $sortValue !== false ? $sortValue : 0;
+
+            $published = ($_POST["is_published"] ?? null) === "1" ? 1 : 0;
             $errors = [];
 if ($id === false || $id < 0) {
     $errors[] = "Invalid project ID.";
@@ -157,7 +205,7 @@ if ($stmt->rowCount() > 0) {
 }
 
 $editProject = null;
-if (isset($_GET["edit"]) && ctype_digit($_GET["edit"])) {
+if (isset($_GET["edit"]) && is_string($_GET["edit"]) && ctype_digit($_GET["edit"])) {
     $stmt = $pdo->prepare("SELECT * FROM projects WHERE id=?");
     $stmt->execute([(int)$_GET["edit"]]);
     $editProject = $stmt->fetch() ?: null;
