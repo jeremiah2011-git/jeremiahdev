@@ -51,7 +51,14 @@ require __DIR__ . "/../includes/header.php";
 <main class="section container">
   <div class="dashboard-heading">
     <div><p class="eyebrow">ADMINISTRATION / OVERVIEW</p><h1>Welcome back.</h1><p>Signed in as <?= htmlspecialchars($_SESSION["admin_email"], ENT_QUOTES, "UTF-8") ?></p></div>
-    <div class="admin-actions"><a class="button" href="projects.php">Manage projects <span aria-hidden="true">↗</span></a><a class="button button-outline" href="logout.php">Log out</a></div>
+    <div class="admin-actions">
+    <a class="button" href="projects.php">Manage projects <span aria-hidden="true">↗</span></a>
+
+    <form method="POST" action="logout.php" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, "UTF-8") ?>">
+        <button class="button button-outline" type="submit">Log out</button>
+    </form>
+</div>
   </div>
   <?php if ($notice): ?><div class="notice <?= $noticeType === "error" ? "error" : "" ?>"><?= htmlspecialchars($notice, ENT_QUOTES, "UTF-8") ?></div><?php endif; ?>
   <div class="admin-stats">
