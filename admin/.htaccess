@@ -1,1 +1,6 @@
 Options -Indexes
+
+# Block backup and temporary files
+<FilesMatch "\.(bak|backup|old|orig|save|tmp|swp)$">
+    Require all denied
+</FilesMatch>
