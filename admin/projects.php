@@ -40,7 +40,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $notice = "Project deleted.";
             }
         } elseif ($action === "save") {
-            $id = (int)($_POST["id"] ?? 0);
+            $idInput = $_POST["id"] ?? "0";
+            $id = is_scalar($idInput) ? filter_var((string)$idInput, FILTER_VALIDATE_INT) : false;
             $title = cleanProjectInput($_POST["title"] ?? "", 150);
             $description = trim($_POST["description"] ?? "");
             $tech = cleanProjectInput($_POST["tech_stack"] ?? "", 500);
@@ -48,6 +49,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $sort = (int)($_POST["sort_order"] ?? 0);
             $published = isset($_POST["is_published"]) ? 1 : 0;
             $errors = [];
+if ($id === false || $id < 0) {
+    $errors[] = "Invalid project ID.";
+    $id = 0;
+}
             if ($title === "") $errors[] = "Project title is required.";
             if ($description === "" || mb_strlen($description) > 5000) $errors[] = "Description is required and must be under 5,000 characters.";
             if (!validExternalUrl($url)) $errors[] = "Project URL must be a valid http or https URL.";
@@ -114,9 +119,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $sql .= " WHERE id=?";
                     $params[] = $id;
                     $stmt = $pdo->prepare($sql);
-                    $stmt->execute($params);
-                    $notice = "Project updated.";
+                   $stmt->execute($params);
+if ($stmt->rowCount() > 0) {
+    $notice = "Project updated.";
+} else {
+    $check = $pdo->prepare("SELECT id FROM projects WHERE id = ?");
+    $check->execute([$id]);
 
+    if ($check->fetchColumn()) {
+        $notice = "No changes were needed. Project is already up to date.";
+    } else {
+        $notice = "Project not found.";
+        $noticeType = "error";
+    }
+}
                     if ($imagePath && !empty($oldImage)) {
                         $oldFile = realpath(__DIR__ . "/../" . $oldImage);
                         $uploadReal = realpath($uploadDir);
