@@ -91,6 +91,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
             }
             if ($errors) {
+                if ($imagePath) {
+                    $uploadedFile = realpath(__DIR__ . "/../" . $imagePath);
+                    $uploadReal = realpath($uploadDir);
+
+                    if (
+                        $uploadedFile &&
+                        $uploadReal &&
+                        strpos($uploadedFile, $uploadReal . DIRECTORY_SEPARATOR) === 0 &&
+                        is_file($uploadedFile)
+                    ) {
+                        @unlink($uploadedFile);
+                    }
+                }
                 $notice = implode(" ", $errors);
                 $noticeType = "error";
             } else {
